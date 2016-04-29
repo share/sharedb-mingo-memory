@@ -1,0 +1,29 @@
+{
+  "name": "sharedb-mingo-memory",
+  "version": "0.1.0",
+  "description": "In-memory database adapter with MongoDB API for ShareDB",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "test-cover": "node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/share/sharedb-mingo-memory.git"
+  },
+  "devDependencies": {
+    "coveralls": "^2.11.8",
+    "expect.js": "^0.3.1",
+    "istanbul": "^0.4.2",
+    "mocha": "^2.3.3"
+  },
+  "author": "Avital Oliver",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/share/sharedb-mingo-memory/issues"
+  },
+  "homepage": "https://github.com/share/sharedb-mingo-memory#readme",
+  "dependencies": {
+    "sharedb": "^0.11.35"
+  }
+}
