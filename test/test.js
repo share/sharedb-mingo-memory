@@ -1,5 +1,6 @@
 var expect = require('expect.js');
-var ShareDBMingo = require('../index');
+var MemoryDB = require('sharedb/lib/db/memory');
+var ShareDBMingo = require('../index').extendMemoryDB(MemoryDB);
 
 function create(callback) {
   var db = ShareDBMingo();
