@@ -9,3 +9,13 @@ function create(callback) {
 
 require('sharedb/test/db')(create);
 
+describe('db', function() {
+  beforeEach(function() {
+    this.db = new ShareDBMingo();
+  });
+
+  describe('query', function() {
+    require('./query')();
+  });
+});
+

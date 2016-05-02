@@ -16,16 +16,22 @@ function extendMemoryDB(MemoryDB) {
     delete query.$skip;
     var limit = query.$limit;
     delete query.$limit;
+    var count = query.$count;
+    delete query.$count;
 
     var filtered = filter(snapshots, query.$query || query);
     sort(filtered, orderby);
     if (skip) filtered.splice(0, skip);
     if (limit) filtered = filtered.slice(0, limit);
-    return filtered;
+    if (count) {
+      return {snapshots: [], extra: filtered.length};
+    } else {
+      return {snapshots: filtered};
+    }
   };
 
   ShareDBMingo.prototype.queryPollDoc = function(collection, id, query, options, callback) {
-    var mingoQuery = new Mingo.Query(query);
+    var mingoQuery = new Mingo.Query(query.$query || query);
     this.getSnapshot(collection, id, null, function(err, snapshot) {
       if (err) return callback(err);
       if (snapshot.data) {
