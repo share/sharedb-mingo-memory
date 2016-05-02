@@ -84,7 +84,7 @@ function extendMemoryDB(MemoryDB) {
   // filter and a specified sort order. The 'order' argument looks like
   // [['foo', 1], ['bar', -1]] for sort by foo asending, then bar
   // descending
-  ShareDbMingo.prototype.makeSortedQuery = function(query, order) {
+  ShareDBMingo.prototype.makeSortedQuery = function(query, order) {
     // Convert order to Mongo's expected structure
     var mongoOrder = {};
     for (var i = 0; i < order.length; i++) {
