@@ -16,6 +16,13 @@ describe('db', function() {
 
   describe('query', function() {
     require('./query')();
+
+    it('unsupported', function() {
+      this.db.query('testcollection', {$mapReduce: []}, null, null, function(err, results) {
+        expect(err).ok();
+        expect(err.message).match(/Unsupported/);
+      });
+    });
   });
 });
 

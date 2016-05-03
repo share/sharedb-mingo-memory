@@ -18,8 +18,13 @@ function extendMemoryDB(MemoryDB) {
     delete query.$limit;
     var count = query.$count;
     delete query.$count;
+    for (var prop in query) {
+      if (prop[0] === '$') {
+        throw new Error("Unsupported operator: " + prop);
+      }
+    }
 
-    var filtered = filter(snapshots, query.$query || query);
+    var filtered = filter(snapshots, query);
     sort(filtered, orderby);
     if (skip) filtered.splice(0, skip);
     if (limit) filtered = filtered.slice(0, limit);
@@ -31,7 +36,7 @@ function extendMemoryDB(MemoryDB) {
   };
 
   ShareDBMingo.prototype.queryPollDoc = function(collection, id, query, options, callback) {
-    var mingoQuery = new Mingo.Query(query.$query || query);
+    var mingoQuery = new Mingo.Query(query);
     this.getSnapshot(collection, id, null, function(err, snapshot) {
       if (err) return callback(err);
       if (snapshot.data) {
@@ -84,13 +89,15 @@ function extendMemoryDB(MemoryDB) {
   // filter and a specified sort order. The 'order' argument looks like
   // [['foo', 1], ['bar', -1]] for sort by foo asending, then bar
   // descending
-  ShareDBMingo.prototype.makeSortedQuery = function(query, order) {
+  ShareDBMingo.prototype.makeSortedQuery = function(inputQuery, order) {
     // Convert order to Mongo's expected structure
     var mongoOrder = {};
     for (var i = 0; i < order.length; i++) {
       mongoOrder[order[i][0]] = order[i][1];
     }
-    return {$query: query, $orderby: mongoOrder};
+    var query = JSON.parse(JSON.stringify(inputQuery));
+    query.$orderby = mongoOrder;
+    return query;
   };
 
   return ShareDBMingo;

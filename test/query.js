@@ -14,7 +14,7 @@ module.exports = function() {
     db.commit('testcollection', 'test1', {v: 0, create: {}}, snapshots[0], function(err) {
       db.commit('testcollection', 'test2', {v: 0, create: {}}, snapshots[1], function(err) {
         db.commit('testcollection', 'test3', {v: 0, create: {}}, snapshots[2], function(err) {
-          var query = {$count: true, $query: {y: 2}};
+          var query = {$count: true, y: 2};
           db.query('testcollection', query, null, null, function(err, results, extra) {
             if (err) throw err;
             expect(results).eql([]);
