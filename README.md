@@ -1,6 +1,8 @@
-# sharedb-mingo-memory
+# ShareDBMingo
 
   [![NPM Version](https://img.shields.io/npm/v/sharedb-mingo-memory.svg)](https://npmjs.org/package/sharedb-mingo-mongo)
+  [![Build Status](https://travis-ci.org/avital/sharedb-mingo-memory.svg?branch=master)](https://travis-ci.org/avital/sharedb-mingo-memory)
+  [![Coverage Status](https://coveralls.io/repos/github/avital/sharedb-mingo-memory/badge.svg?branch=master)](https://coveralls.io/github/avital/sharedb-mingo-memory?branch=master)
 
 A database adapter for [sharedb](https://github.com/share/sharedb)
 that implements a subset of Mongo operations using an in-memory
