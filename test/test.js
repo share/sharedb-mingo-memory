@@ -1,6 +1,6 @@
 var expect = require('expect.js');
-var MemoryDB = require('sharedb/lib/db/memory');
-var ShareDBMingo = require('../index').extendMemoryDB(MemoryDB);
+var ShareDBMingo = require('../index');
+var makeSortedQuery = require('./make-sorted-query');
 
 function create(callback) {
   var db = ShareDBMingo();
@@ -28,7 +28,6 @@ describe('db', function() {
 
 describe('makeSortedQuery', function() {
   it('basic', function() {
-    var makeSortedQuery = ShareDBMingo.prototype.makeSortedQuery;
     expect(makeSortedQuery({foo: 2}, []))
       .eql({foo: 2});
     expect(makeSortedQuery({foo: 2}, [['foo', -1]]))
