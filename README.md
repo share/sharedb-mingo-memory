@@ -6,20 +6,23 @@
 
 A database adapter for [sharedb](https://github.com/share/sharedb)
 that implements a subset of Mongo operations using an in-memory
-database. Used by sharedb tests. Might be useful for running some
-application tests faster by not requiring a full database.
+database. This adapter can be useful for running application tests
+faster by not requiring a full database. It is also used by tests for
+sharedb itself.
 
 ## Usage
 
 ```js
-var MemoryDB = require('sharedb').MemoryDB;
-var ShareDBMingo = require('sharedb-mingo-memory').extendMemoryDB(MemoryDB);
+var ShareDBMingo = require('sharedb-mingo-memory');
 var db = new ShareDBMingo();
 ```
 
-This module intentionally does not depend on sharedb directly, so that
-it can be used by sharedb tests without having two copies of the
-sharedb module.
+Another form is useful at times:
+`ShareDBMingo.extendMemoryDB(MemoryDB)`.  This creates a new
+ShareDBMingo class that extends from a particular MemoryDB class, in
+case there are more than one available. This is particularly important
+to ensure sharedb tests aren't testing the version of sharedb being
+used by sharedb-mingo-memory.
 
 ## Queries
 

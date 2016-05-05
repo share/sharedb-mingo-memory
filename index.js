@@ -113,6 +113,7 @@ function extendMemoryDB(MemoryDB) {
   return ShareDBMingo;
 }
 
-module.exports = {
-  extendMemoryDB: extendMemoryDB
-};
+ShareDBMingo = extendMemoryDB(require('sharedb').MemoryDB);
+ShareDBMingo.extendMemoryDB = extendMemoryDB;
+
+module.exports = ShareDBMingo;
