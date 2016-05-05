@@ -12,6 +12,7 @@
     "url": "git://github.com/share/sharedb-mingo-memory.git"
   },
   "devDependencies": {
+    "async": "^2.0.0-rc.3",
     "coveralls": "^2.11.8",
     "expect.js": "^0.3.1",
     "istanbul": "^0.4.2",

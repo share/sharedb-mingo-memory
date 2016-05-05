@@ -26,3 +26,14 @@ describe('db', function() {
   });
 });
 
+describe('makeSortedQuery', function() {
+  it('basic', function() {
+    var makeSortedQuery = ShareDBMingo.prototype.makeSortedQuery;
+    expect(makeSortedQuery({foo: 2}, []))
+      .eql({foo: 2});
+    expect(makeSortedQuery({foo: 2}, [['foo', -1]]))
+      .eql({foo: 2, $orderby: {foo: -1}});
+    expect(makeSortedQuery({foo: 2}, [['foo', 1], ['bar', -1]]))
+      .eql({foo: 2, $orderby: {foo: 1, bar: -1}});
+  })
+});

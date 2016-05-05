@@ -25,7 +25,7 @@ function extendMemoryDB(MemoryDB) {
     }
 
     var filtered = filter(snapshots, query);
-    sort(filtered, orderby);
+    if (orderby) sort(filtered, orderby);
     if (skip) filtered.splice(0, skip);
     if (limit) filtered = filtered.slice(0, limit);
     if (count) {
@@ -91,13 +91,23 @@ function extendMemoryDB(MemoryDB) {
   // descending
   ShareDBMingo.prototype.makeSortedQuery = function(inputQuery, order) {
     // Convert order to Mongo's expected structure
-    var mongoOrder = {};
-    for (var i = 0; i < order.length; i++) {
-      mongoOrder[order[i][0]] = order[i][1];
+    if (!Array.isArray(order)) {
+      throw new Error("invalid order");
     }
-    var query = JSON.parse(JSON.stringify(inputQuery));
-    query.$orderby = mongoOrder;
-    return query;
+    if (order.length === 0) {
+      return inputQuery;
+    } else {
+      var mongoOrder = {};
+      for (var i = 0; i < order.length; i++) {
+        if (!Array.isArray(order[i]) || order[i].length !== 2) {
+          throw new Error("invalid order");
+        }
+        mongoOrder[order[i][0]] = order[i][1];
+      }
+      var query = JSON.parse(JSON.stringify(inputQuery));
+      query.$orderby = mongoOrder;
+      return query;
+    }
   };
 
   return ShareDBMingo;
