@@ -1,7 +1,7 @@
 // Given a key/value comparison query, return a query object with that
 // filter and a specified sort order. The 'order' argument looks like
 // [['foo', 1], ['bar', -1]] for sort by foo asending, then bar
-// descending. This function is passed into
+// descending. This function is passed into the sharedb test suite.
 function makeSortedQuery(inputQuery, order) {
   // Convert order to Mongo's expected structure
   if (!Array.isArray(order)) {
@@ -18,7 +18,7 @@ function makeSortedQuery(inputQuery, order) {
       mongoOrder[order[i][0]] = order[i][1];
     }
     var query = JSON.parse(JSON.stringify(inputQuery));
-    query.$orderby = mongoOrder;
+    query.$sort = mongoOrder;
     return query;
   }
 };

@@ -9,26 +9,13 @@ function extendMemoryDB(MemoryDB) {
   ShareDBMingo.prototype = Object.create(MemoryDB.prototype);
 
   ShareDBMingo.prototype._querySync = function(snapshots, query, options) {
-    var query = JSON.parse(JSON.stringify(query));
-    var orderby = query.$orderby;
-    delete query.$orderby;
-    var skip = query.$skip;
-    delete query.$skip;
-    var limit = query.$limit;
-    delete query.$limit;
-    var count = query.$count;
-    delete query.$count;
-    for (var prop in query) {
-      if (prop[0] === '$') {
-        throw new Error("Unsupported operator: " + prop);
-      }
-    }
+    var parsed = parseQuery(query);
 
-    var filtered = filter(snapshots, query);
-    if (orderby) sort(filtered, orderby);
-    if (skip) filtered.splice(0, skip);
-    if (limit) filtered = filtered.slice(0, limit);
-    if (count) {
+    var filtered = filter(snapshots, parsed.query);
+    if (parsed.sort) sort(filtered, parsed.sort);
+    if (parsed.skip) filtered.splice(0, parsed.skip);
+    if (parsed.limit) filtered = filtered.slice(0, parsed.limit);
+    if (parsed.count) {
       return {snapshots: [], extra: filtered.length};
     } else {
       return {snapshots: filtered};
@@ -50,11 +37,45 @@ function extendMemoryDB(MemoryDB) {
   ShareDBMingo.prototype.canPollDoc = function(collection, query) {
     return !(
       query.hasOwnProperty('$orderby') ||
+        query.hasOwnProperty('$sort') ||
         query.hasOwnProperty('$limit') ||
         query.hasOwnProperty('$skip') ||
         query.hasOwnProperty('$count')
     );
   };
+
+  function parseQuery(inputQuery) {
+    var query = JSON.parse(JSON.stringify(inputQuery));
+
+    if (inputQuery.$orderby)
+      console.warn("Warning: query.$orderby deprecated. Use query.$sort instead.");
+    var sort = query.$sort || query.$orderby;
+    delete query.$sort;
+    delete query.$orderby;
+
+    var skip = query.$skip;
+    delete query.$skip;
+
+    var limit = query.$limit;
+    delete query.$limit;
+
+    var count = query.$count;
+    delete query.$count;
+
+    for (var prop in query) {
+      if (prop[0] === '$') {
+        throw new Error("Unsupported operator: " + prop);
+      }
+    }
+
+    return {
+      query: query,
+      sort: sort,
+      skip: skip,
+      limit: limit,
+      count: count
+    }
+  }
 
   // Support exact key match filters only
   function filter(snapshots, query) {

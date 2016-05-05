@@ -1,6 +1,6 @@
 var expect = require('expect.js');
 var ShareDBMingo = require('../index');
-var makeSortedQuery = require('./make-sorted-query');
+var makeSortedQuery = require('../make-sorted-query');
 
 function create(callback) {
   var db = ShareDBMingo();
@@ -31,8 +31,8 @@ describe('makeSortedQuery', function() {
     expect(makeSortedQuery({foo: 2}, []))
       .eql({foo: 2});
     expect(makeSortedQuery({foo: 2}, [['foo', -1]]))
-      .eql({foo: 2, $orderby: {foo: -1}});
+      .eql({foo: 2, $sort: {foo: -1}});
     expect(makeSortedQuery({foo: 2}, [['foo', 1], ['bar', -1]]))
-      .eql({foo: 2, $orderby: {foo: 1, bar: -1}});
+      .eql({foo: 2, $sort: {foo: 1, bar: -1}});
   })
 });

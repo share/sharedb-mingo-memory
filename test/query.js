@@ -1,6 +1,6 @@
 var expect = require('expect.js');
 var async = require('async');
-var makeSortedQuery = require('./make-sorted-query');
+var makeSortedQuery = require('../make-sorted-query');
 
 // Call this function inside a `describe` block. Assumes that
 // `this.db` is set to be a ShareDB instance that supports certain
@@ -19,19 +19,23 @@ module.exports = function() {
       db.commit('testcollection', snapshot.id, {v: 0, create: {}}, snapshot, cb);
     }, function(err) {
       if (err) return done(err);
-      expect(results).eql([]);
-      expect(extra).eql(2);
-      done();
+      db.query('testcollection', query, null, null, function(err, results, extra) {
+        if (err) return done(err);
+
+        expect(results).eql([]);
+        expect(extra).eql(2);
+        done();
+      });
     });
   });
 
-  it('$orderby, $skip and $limit should order, skip and limit', function(done) {
+  it('$sort, $skip and $limit should order, skip and limit', function(done) {
     var snapshots = [
       {type: 'json0', v: 1, data: {x: 1}, id: "test1"},
       {type: 'json0', v: 1, data: {x: 3}, id: "test2"}, // intentionally added out of sort order
       {type: 'json0', v: 1, data: {x: 2}, id: "test3"}
     ];
-    var query = {$orderby: {x: 1}, $skip: 1, $limit: 1};
+    var query = {$sort: {x: 1}, $skip: 1, $limit: 1};
 
     var db = this.db;
     async.each(snapshots, function(snapshot, cb) {
