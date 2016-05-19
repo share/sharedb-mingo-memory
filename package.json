@@ -26,6 +26,6 @@
   "homepage": "https://github.com/share/sharedb-mingo-memory#readme",
   "dependencies": {
     "mingo": "^0.6.3",
-    "sharedb": "avital/sharedb#memorydb-extra"
+    "sharedb": "avital/sharedb#use-mingo"
   }
 }

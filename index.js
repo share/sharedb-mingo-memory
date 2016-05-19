@@ -74,7 +74,7 @@ function extendMemoryDB(MemoryDB) {
       skip: skip,
       limit: limit,
       count: count
-    }
+    };
   }
 
   // Support exact key match filters only
