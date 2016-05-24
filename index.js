@@ -62,12 +62,6 @@ function extendMemoryDB(MemoryDB) {
     var count = query.$count;
     delete query.$count;
 
-    for (var prop in query) {
-      if (prop[0] === '$') {
-        throw new Error("Unsupported operator: " + prop);
-      }
-    }
-
     return {
       query: query,
       sort: sort,

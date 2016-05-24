@@ -50,4 +50,35 @@ module.exports = function() {
       });
     });
   });
+
+  describe('top-level $and and $or', function(done) {
+    var snapshots = [
+      {type: 'json0', v: 1, data: {x: 1, y: 1}, id: "test1"},
+      {type: 'json0', v: 1, data: {x: 1, y: 2}, id: "test2"},
+      {type: 'json0', v: 1, data: {x: 2, y: 2}, id: "test3"}
+    ];
+
+    beforeEach(function(done) {
+      var db = this.db;
+      async.each(snapshots, function(snapshot, cb) {
+        db.commit('testcollection', snapshot.id, {v: 0, create: {}}, snapshot, cb);
+      }, done);
+    });
+
+    it('$and', function(done) {
+      this.db.query('testcollection', {$and: [{x: 1}, {y: 1}]}, null, null, function(err, results, extra) {
+        if (err) throw err;
+        expect(results).eql([snapshots[0]]);
+        done();
+      });
+    });
+
+    it('$or', function(done) {
+      this.db.query('testcollection', {$or: [{x: 1}, {y: 1}]}, null, null, function(err, results, extra) {
+        if (err) throw err;
+        expect(results).eql([snapshots[0], snapshots[1]]);
+        done();
+      });
+    });
+  });
 };
