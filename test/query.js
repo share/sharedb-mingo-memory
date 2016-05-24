@@ -1,6 +1,5 @@
 var expect = require('expect.js');
 var async = require('async');
-var makeSortedQuery = require('../make-sorted-query');
 
 // Call this function inside a `describe` block. Assumes that
 // `this.db` is set to be a ShareDB instance that supports certain

@@ -1,13 +1,13 @@
 var expect = require('expect.js');
 var ShareDBMingo = require('../index');
-var makeSortedQuery = require('../make-sorted-query');
+var getQuery = require('../get-query');
 
 function create(callback) {
   var db = ShareDBMingo();
   callback(null, db);
 }
 
-require('sharedb/test/db')(create, makeSortedQuery);
+require('sharedb/test/db')({create: create, getQuery: getQuery});
 
 describe('db', function() {
   beforeEach(function() {
@@ -26,13 +26,13 @@ describe('db', function() {
   });
 });
 
-describe('makeSortedQuery', function() {
+describe('getQuery', function() {
   it('basic', function() {
-    expect(makeSortedQuery({foo: 2}, []))
+    expect(getQuery({query: {foo: 2}, sort: []}))
       .eql({foo: 2});
-    expect(makeSortedQuery({foo: 2}, [['foo', -1]]))
+    expect(getQuery({query: {foo: 2}, sort: [['foo', -1]]}))
       .eql({foo: 2, $sort: {foo: -1}});
-    expect(makeSortedQuery({foo: 2}, [['foo', 1], ['bar', -1]]))
+    expect(getQuery({query: {foo: 2}, sort: [['foo', 1], ['bar', -1]]}))
       .eql({foo: 2, $sort: {foo: 1, bar: -1}});
   })
 });
