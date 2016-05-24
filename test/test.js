@@ -7,7 +7,7 @@ function create(callback) {
   callback(null, db);
 }
 
-require('sharedb/test/db')(create);
+require('sharedb/test/db')(create, makeSortedQuery);
 
 describe('db', function() {
   beforeEach(function() {
