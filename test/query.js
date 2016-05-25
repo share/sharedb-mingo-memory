@@ -1,5 +1,6 @@
 var expect = require('expect.js');
 var async = require('async');
+var Backend = require('sharedb').Backend;
 
 // Call this function inside a `describe` block. Assumes that
 // `this.db` is set to be a ShareDB instance that supports certain
@@ -23,6 +24,29 @@ module.exports = function() {
 
         expect(results).eql([]);
         expect(extra).eql(2);
+        done();
+      });
+    });
+  });
+
+  it('$count with createSubscribeQuery', function(done) {
+    var connection = new Backend({db: this.db}) .connect();
+    async.parallel([
+      function(cb) { connection.get('testcollection', 'test1').create({x: 1, y: 1}, cb); },
+      function(cb) { connection.get('testcollection', 'test2').create({x: 2, y: 2}, cb); },
+      function(cb) { connection.get('testcollection', 'test3').create({x: 3, y: 2}, cb); }
+    ], function(err) {
+      var query = {$count: true, y: 2};
+      if (err) return done(err);
+      var query = connection.createSubscribeQuery('testcollection', query, null, function(err, results, extra) {
+        if (err) return done(err);
+
+        expect(results).eql([]);
+        expect(extra).eql(2);
+        connection.get('testcollection', 'test3').submitOp({p: ['y'], na: 1});
+      });
+      query.on('extra', function(extra) {
+        expect(extra).eql(1);
         done();
       });
     });
