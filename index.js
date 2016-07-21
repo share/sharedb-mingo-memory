@@ -24,7 +24,7 @@ function extendMemoryDB(MemoryDB) {
 
   ShareDBMingo.prototype.queryPollDoc = function(collection, id, query, options, callback) {
     var mingoQuery = new Mingo.Query(query);
-    this.getSnapshot(collection, id, null, function(err, snapshot) {
+    this.getSnapshot(collection, id, null, null, function(err, snapshot) {
       if (err) return callback(err);
       if (snapshot.data) {
         callback(null, mingoQuery.test(snapshot.data));
