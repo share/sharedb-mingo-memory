@@ -15,7 +15,7 @@ module.exports = function() {
 
     var db = this.db;
     async.each(snapshots, function(snapshot, cb) {
-      db.commit('testcollection', snapshot.id, {v: 0, create: {}}, snapshot, cb);
+      db.commit('testcollection', snapshot.id, {v: 0, create: {}}, snapshot, null, cb);
     }, function(err) {
       if (err) return done(err);
       db.query('testcollection', query, null, null, function(err, results, extra) {
@@ -38,7 +38,7 @@ module.exports = function() {
 
     var db = this.db;
     async.each(snapshots, function(snapshot, cb) {
-      db.commit('testcollection', snapshot.id, {v: 0, create: {}}, snapshot, cb);
+      db.commit('testcollection', snapshot.id, {v: 0, create: {}}, snapshot, null, cb);
     }, function(err) {
       if (err) return done(err);
 
@@ -60,7 +60,7 @@ module.exports = function() {
     beforeEach(function(done) {
       var db = this.db;
       async.each(snapshots, function(snapshot, cb) {
-        db.commit('testcollection', snapshot.id, {v: 0, create: {}}, snapshot, cb);
+        db.commit('testcollection', snapshot.id, {v: 0, create: {}}, snapshot, null, cb);
       }, done);
     });
 
