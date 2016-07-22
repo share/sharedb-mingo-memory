@@ -1,6 +1,6 @@
 {
   "name": "sharedb-mingo-memory",
-  "version": "0.1.16",
+  "version": "1.0.0-beta",
   "description": "In-memory database adapter with MongoDB API for ShareDB",
   "main": "index.js",
   "scripts": {
