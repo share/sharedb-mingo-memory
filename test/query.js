@@ -50,7 +50,51 @@ module.exports = function() {
     });
   });
 
-  describe('top-level boolean operator', function(done) {
+  it('filters with top-level _id condition', function(done) {
+    var snapshots = [
+      {type: 'json0', v: 1, data: {x: 1, y: 1}, id: "test1"},
+      {type: 'json0', v: 1, data: {x: 1, y: 2}, id: "test2"},
+      {type: 'json0', v: 1, data: {x: 2, y: 2}, id: "test3"}
+    ];
+    var query = {_id: {$in: ['test1', 'test3']}};
+
+    var db = this.db;
+    async.each(snapshots, function(snapshot, cb) {
+      db.commit('testcollection', snapshot.id, {v: 0, create: {}}, snapshot, null, cb);
+    }, function(err) {
+      if (err) return done(err);
+
+      db.query('testcollection', query, null, null, function(err, results, extra) {
+        if (err) throw err;
+        expect(results).eql([snapshots[0], snapshots[2]]);
+        done();
+      });
+    });
+  });
+
+  it('filters with null condition', function(done) {
+    var snapshots = [
+      {type: 'json0', v: 1, data: {x: 1, y: 1}, id: "test1"},
+      {type: 'json0', v: 1, data: {x: 1}, id: "test2"}, // y value intentionally omitted
+      {type: 'json0', v: 1, data: {x: 2, y: 2}, id: "test3"}
+    ];
+    var query = {y: null};
+
+    var db = this.db;
+    async.each(snapshots, function(snapshot, cb) {
+      db.commit('testcollection', snapshot.id, {v: 0, create: {}}, snapshot, null, cb);
+    }, function(err) {
+      if (err) return done(err);
+
+      db.query('testcollection', query, null, null, function(err, results, extra) {
+        if (err) throw err;
+        expect(results).eql([snapshots[1]]);
+        done();
+      });
+    });
+  });
+
+  describe('top-level boolean operator', function() {
     var snapshots = [
       {type: 'json0', v: 1, data: {x: 1, y: 1}, id: "test1"},
       {type: 'json0', v: 1, data: {x: 1, y: 2}, id: "test2"},
