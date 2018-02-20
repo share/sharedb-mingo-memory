@@ -50,23 +50,40 @@ module.exports = function() {
     });
   });
 
-  it('filters with top-level _id condition', function(done) {
+  describe('top-level Mongo doc properties', function() {
     var snapshots = [
       {type: 'json0', v: 1, data: {x: 1, y: 1}, id: "test1"},
       {type: 'json0', v: 1, data: {x: 1, y: 2}, id: "test2"},
       {type: 'json0', v: 1, data: {x: 2, y: 2}, id: "test3"}
     ];
-    var query = {_id: {$in: ['test1', 'test3']}};
 
-    var db = this.db;
-    async.each(snapshots, function(snapshot, cb) {
-      db.commit('testcollection', snapshot.id, {v: 0, create: {}}, snapshot, null, cb);
-    }, function(err) {
-      if (err) return done(err);
+    beforeEach(function(done) {
+      var db = this.db;
+      async.each(snapshots, function(snapshot, cb) {
+        db.commit('testcollection', snapshot.id, {v: 0, create: {}}, snapshot, null, cb);
+      }, done);
+    });
 
-      db.query('testcollection', query, null, null, function(err, results, extra) {
+    it('matches value', function(done) {
+      this.db.query('testcollection', {_id: 'test1'}, null, null, function(err, results, extra) {
         if (err) throw err;
-        expect(results).eql([snapshots[0], snapshots[2]]);
+        expect(results).eql([snapshots[0]]);
+        done();
+      });
+    });
+
+    it('combines with data conditions', function(done) {
+      this.db.query('testcollection', {y: 2, _id: {$nin: ['test2']}}, null, null, function(err, results, extra) {
+        if (err) throw err;
+        expect(results).eql([snapshots[2]]);
+        done();
+      });
+    });
+
+    it('top-level boolean operator', function(done) {
+      this.db.query('testcollection', {$or: [{y: 1}, {_id: 'test2'}]}, null, null, function(err, results, extra) {
+        if (err) throw err;
+        expect(results).eql([snapshots[0], snapshots[1]]);
         done();
       });
     });
