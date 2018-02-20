@@ -17,6 +17,24 @@ function extendMemoryDB(MemoryDB) {
 
   ShareDBMingo.prototype = Object.create(MemoryDB.prototype);
 
+  ShareDBMingo.prototype.projectsSnapshots = true;
+
+  // HACK: Wrap MemoryDB functions to project snapshots before returning them.
+  //   This would be cleaner if implemented directly in MemoryDB, or it would be
+  //   more aligned with a drop-in sharedb-mongo replacement if implemented as
+  //   mingo projections.
+  ShareDBMingo.prototype.getSnapshot = function(collection, id, fields, options, callback) {
+    MemoryDB.prototype.getSnapshot.call(this, collection, id, fields, options, function (err, snapshot) {
+      callback(err, projectSnapshot(fields, snapshot));
+    });
+  }
+  ShareDBMingo.prototype.query = function(collection, query, fields, options, callback) {
+    MemoryDB.prototype.query.call(this, collection, query, fields, options, function (err, snapshots, extra) {
+      var projectSnapshotWithFields = projectSnapshot.bind(null, fields);
+      callback(err, snapshots.map(projectSnapshotWithFields), extra);
+    });
+  }
+
   ShareDBMingo.prototype._querySync = function(snapshots, query, options) {
     var parsed = parseQuery(query);
     var mingoQuery = new Mingo.Query(castToSnapshotQuery(parsed.query));
@@ -80,6 +98,27 @@ function extendMemoryDB(MemoryDB) {
       skip: skip,
       limit: limit,
       count: count
+    };
+  }
+
+  function projectSnapshot(fields, snapshot) {
+    // Don't project when there's no projection
+    if (!fields) return snapshot;
+    // Don't project when called by ShareDB submit
+    if (fields.$submit) return snapshot;
+
+    var projectedData = {};
+    for (var key in snapshot.data) {
+      if (fields[key]) projectedData[key] = snapshot.data[key];
+    }
+
+    return {
+      id: snapshot.id,
+      v: snapshot.v,
+      type: snapshot.type,
+      m: snapshot.m,
+      o: snapshot.o,
+      data: projectedData
     };
   }
 
