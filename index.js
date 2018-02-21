@@ -25,13 +25,15 @@ function extendMemoryDB(MemoryDB) {
   //   mingo projections.
   ShareDBMingo.prototype.getSnapshot = function(collection, id, fields, options, callback) {
     MemoryDB.prototype.getSnapshot.call(this, collection, id, fields, options, function (err, snapshot) {
-      callback(err, projectSnapshot(fields, snapshot));
+      if (err) return callback(err);
+      callback(null, projectSnapshot(fields, snapshot));
     });
   }
   ShareDBMingo.prototype.query = function(collection, query, fields, options, callback) {
     MemoryDB.prototype.query.call(this, collection, query, fields, options, function (err, snapshots, extra) {
+      if (err) return callback(err);
       var projectSnapshotWithFields = projectSnapshot.bind(null, fields);
-      callback(err, snapshots.map(projectSnapshotWithFields), extra);
+      callback(null, (snapshots || []).map(projectSnapshotWithFields), extra);
     });
   }
 
