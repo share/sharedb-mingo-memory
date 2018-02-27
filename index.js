@@ -1,5 +1,14 @@
 var Mingo = require('mingo');
 
+// Snapshot properties added to the root doc by `castToDoc()` in sharedb-mongo
+var MONGO_DOC_PROPERTIES = {
+  '_id': 'id',
+  '_v': 'v',
+  '_type': 'type',
+  '_m': 'm',
+  '_o': 'o'
+};
+
 function extendMemoryDB(MemoryDB) {
   function ShareDBMingo(options) {
     if (!(this instanceof ShareDBMingo)) return new ShareDBMingo(options);
@@ -10,8 +19,11 @@ function extendMemoryDB(MemoryDB) {
 
   ShareDBMingo.prototype._querySync = function(snapshots, query, options) {
     var parsed = parseQuery(query);
+    var mingoQuery = new Mingo.Query(castToSnapshotQuery(parsed.query));
 
-    var filtered = filter(snapshots, parsed.query);
+    var filtered = snapshots.filter(function(snapshot) {
+      return mingoQuery.test(snapshot);
+    });
     if (parsed.sort) sort(filtered, parsed.sort);
     if (parsed.skip) filtered.splice(0, parsed.skip);
     if (parsed.limit) filtered = filtered.slice(0, parsed.limit);
@@ -23,11 +35,11 @@ function extendMemoryDB(MemoryDB) {
   };
 
   ShareDBMingo.prototype.queryPollDoc = function(collection, id, query, options, callback) {
-    var mingoQuery = new Mingo.Query(query);
+    var mingoQuery = new Mingo.Query(castToSnapshotQuery(query));
     this.getSnapshot(collection, id, null, null, function(err, snapshot) {
       if (err) return callback(err);
       if (snapshot.data) {
-        callback(null, mingoQuery.test(snapshot.data));
+        callback(null, mingoQuery.test(snapshot));
       } else {
         callback(null, false);
       }
@@ -71,12 +83,29 @@ function extendMemoryDB(MemoryDB) {
     };
   }
 
-  // Support exact key match filters only
-  function filter(snapshots, query) {
-    var mingoQuery = new Mingo.Query(query);
-    return snapshots.filter(function(snapshot) {
-      return snapshot.data && mingoQuery.test(snapshot.data);
-    });
+  // Build a query object that mimics how the query would be executed if it were
+  // made against snapshots persisted with `sharedb-mongo`
+  // FIXME: This doesn't handle nested doc properties with dots like: {'_m.mtime': 12300}
+  function castToSnapshotQuery(query) {
+    var snapshotQuery = {};
+    for (var property in query) {
+      // Mongo doc property
+      if (MONGO_DOC_PROPERTIES[property]) {
+        snapshotQuery[MONGO_DOC_PROPERTIES[property]] = query[property];
+
+      // top-level boolean operator
+      } else if (property[0] === '$' && Array.isArray(query[property])) {
+        snapshotQuery[property] = [];
+        for (var i = 0; i < query[property].length; i++) {
+          snapshotQuery[property].push(castToSnapshotQuery(query[property][i]));
+        }
+
+      // nested `data` document
+      } else {
+        snapshotQuery["data." + property] = query[property];
+      }
+    }
+    return snapshotQuery;
   }
 
   // Support sorting with the Mongo $orderby syntax

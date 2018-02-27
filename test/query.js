@@ -50,7 +50,94 @@ module.exports = function() {
     });
   });
 
-  describe('top-level boolean operator', function(done) {
+  describe('filtering on special Share properties', function() {
+    // When sharedb-mongo persists a snapshot into Mongo, any properties
+    // underneath `data` get "promoted" to top-level, and Share properties
+    // get underscore-prefixed to avoid name conflicts, like `v` to `_v`.
+    //
+    // Query conditions don't undergo this transformation, so if you wanted
+    // to filter on snapshot version, you'd query with `{_v: 12}`. These tests
+    // check that sharedb-mingo-memory is consistent with sharedb-mongo for
+    // queries like those that filter on non-data Share properties.
+    var snapshots = [
+      {type: 'json0', v: 1, data: {x: 1, y: 1}, id: "test1", m: {mtime: 1000}},
+      {type: 'json0', v: 1, data: {x: 1, y: 2}, id: "test2", m: {mtime: 1001}},
+      {type: 'json0', v: 1, data: {x: 2, y: 2}, id: "test3", m: {mtime: 1002}}
+    ];
+    var snapshotsNoMeta = snapshots.map(function(snapshot) {
+      var snapshotCopy = JSON.parse(JSON.stringify(snapshot));
+      delete snapshotCopy.m;
+      return snapshotCopy;
+    });
+
+    beforeEach(function(done) {
+      var db = this.db;
+      async.each(snapshots, function(snapshot, cb) {
+        db.commit('testcollection', snapshot.id, {v: 0, create: {}}, snapshot, null, cb);
+      }, done);
+    });
+
+    it('condition on Mongo _id (Share id)', function(done) {
+      this.db.query('testcollection', {_id: 'test1'}, null, null, function(err, results, extra) {
+        if (err) throw err;
+        expect(results).eql([snapshotsNoMeta[0]]);
+        done();
+      });
+    });
+
+    // The simpler query-casting approach doesn't handle queries that filter on
+    // sub-properties of the Share metadata object. An alternative would be to
+    // rewrite this module to cast Share snapshots to Mongo docs and vice versa,
+    // the same way that sharedb-mongo does:
+    // https://github.com/share/sharedb-mingo-memory/pull/3#pullrequestreview-99017385
+    it.skip('condition on sub-property under Share metadata', function(done) {
+      this.db.query('testcollection', {'_m.mtime': 1001}, null, null, function(err, results, extra) {
+        if (err) throw err;
+        expect(results).eql([snapshotsNoMeta[1]]);
+        done();
+      });
+    });
+
+    it('condition on Mongo _id and Share data', function(done) {
+      this.db.query('testcollection', {y: 2, _id: {$nin: ['test2']}}, null, null, function(err, results, extra) {
+        if (err) throw err;
+        expect(results).eql([snapshotsNoMeta[2]]);
+        done();
+      });
+    });
+
+    it('top-level boolean operator', function(done) {
+      this.db.query('testcollection', {$or: [{y: 1}, {_id: 'test2'}]}, null, null, function(err, results, extra) {
+        if (err) throw err;
+        expect(results).eql([snapshotsNoMeta[0], snapshotsNoMeta[1]]);
+        done();
+      });
+    });
+  });
+
+  it('filters with null condition', function(done) {
+    var snapshots = [
+      {type: 'json0', v: 1, data: {x: 1, y: 1}, id: "test1"},
+      {type: 'json0', v: 1, data: {x: 1}, id: "test2"}, // y value intentionally omitted
+      {type: 'json0', v: 1, data: {x: 2, y: 2}, id: "test3"}
+    ];
+    var query = {y: null};
+
+    var db = this.db;
+    async.each(snapshots, function(snapshot, cb) {
+      db.commit('testcollection', snapshot.id, {v: 0, create: {}}, snapshot, null, cb);
+    }, function(err) {
+      if (err) return done(err);
+
+      db.query('testcollection', query, null, null, function(err, results, extra) {
+        if (err) throw err;
+        expect(results).eql([snapshots[1]]);
+        done();
+      });
+    });
+  });
+
+  describe('top-level boolean operator', function() {
     var snapshots = [
       {type: 'json0', v: 1, data: {x: 1, y: 1}, id: "test1"},
       {type: 'json0', v: 1, data: {x: 1, y: 2}, id: "test2"},
