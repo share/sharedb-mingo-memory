@@ -1,9 +1,16 @@
 var expect = require('expect.js');
 var async = require('async');
 
+var sortSnapshot = function(snapshots) {
+  return snapshots.sort(function (a, b) {
+    return (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0);
+  });
+}
+
 // Call this function inside a `describe` block. Assumes that
 // `this.db` is set to be a ShareDB instance that supports certain
 // Mongo queries.
+
 module.exports = function() {
   it('$count should count documents', function(done) {
     var snapshots = [
@@ -109,7 +116,7 @@ module.exports = function() {
     it('top-level boolean operator', function(done) {
       this.db.query('testcollection', {$or: [{y: 1}, {_id: 'test2'}]}, null, null, function(err, results, extra) {
         if (err) throw err;
-        expect(results).eql([snapshotsNoMeta[0], snapshotsNoMeta[1]]);
+        expect(sortSnapshot(results)).eql(sortSnapshot([snapshotsNoMeta[0], snapshotsNoMeta[1]]));
         done();
       });
     });
@@ -162,7 +169,7 @@ module.exports = function() {
     it('$or', function(done) {
       this.db.query('testcollection', {$or: [{x: 1}, {y: 1}], $sort: {_id: 1}}, null, null, function(err, results, extra) {
         if (err) throw err;
-        expect(results).eql([snapshots[0], snapshots[1]]);
+        expect(sortSnapshot(results)).eql(sortSnapshot([snapshots[0], snapshots[1]]));
         done();
       });
     });
