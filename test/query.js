@@ -10,7 +10,6 @@ var sortSnapshot = function(snapshots) {
 // Call this function inside a `describe` block. Assumes that
 // `this.db` is set to be a ShareDB instance that supports certain
 // Mongo queries.
-
 module.exports = function() {
   it('$count should count documents', function(done) {
     var snapshots = [
