@@ -16,7 +16,8 @@
     "coveralls": "^2.11.8",
     "expect.js": "^0.3.1",
     "istanbul": "^0.4.2",
-    "mocha": "^2.3.3"
+    "mocha": "^2.3.3",
+    "sharedb": "^1.0.0-beta"
   },
   "author": "Avital Oliver",
   "license": "MIT",
@@ -25,7 +26,9 @@
   },
   "homepage": "https://github.com/share/sharedb-mingo-memory#readme",
   "dependencies": {
-    "mingo": "^2.2.0",
+    "mingo": "^2.2.0"
+  },
+  "peerDependencies": {
     "sharedb": "^1.0.0-beta"
   }
 }
