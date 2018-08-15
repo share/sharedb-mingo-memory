@@ -36,9 +36,9 @@ module.exports = function() {
 
   it('$sort, $skip and $limit should order, skip and limit', function(done) {
     var snapshots = [
-      {type: 'json0', v: 1, data: {x: 1}, id: "test1"},
-      {type: 'json0', v: 1, data: {x: 3}, id: "test2"}, // intentionally added out of sort order
-      {type: 'json0', v: 1, data: {x: 2}, id: "test3"}
+      {type: 'json0', v: 1, data: {x: 1}, id: "test1", m: null},
+      {type: 'json0', v: 1, data: {x: 3}, id: "test2", m: null}, // intentionally added out of sort order
+      {type: 'json0', v: 1, data: {x: 2}, id: "test3", m: null}
     ];
     var query = {$sort: {x: 1}, $skip: 1, $limit: 1};
 
@@ -72,7 +72,7 @@ module.exports = function() {
     ];
     var snapshotsNoMeta = snapshots.map(function(snapshot) {
       var snapshotCopy = JSON.parse(JSON.stringify(snapshot));
-      delete snapshotCopy.m;
+      snapshotCopy.m = null;
       return snapshotCopy;
     });
 
@@ -123,9 +123,9 @@ module.exports = function() {
 
   it('filters with null condition', function(done) {
     var snapshots = [
-      {type: 'json0', v: 1, data: {x: 1, y: 1}, id: "test1"},
-      {type: 'json0', v: 1, data: {x: 1}, id: "test2"}, // y value intentionally omitted
-      {type: 'json0', v: 1, data: {x: 2, y: 2}, id: "test3"}
+      {type: 'json0', v: 1, data: {x: 1, y: 1}, id: "test1", m: null},
+      {type: 'json0', v: 1, data: {x: 1}, id: "test2", m: null}, // y value intentionally omitted
+      {type: 'json0', v: 1, data: {x: 2, y: 2}, id: "test3", m: null}
     ];
     var query = {y: null};
 
@@ -145,9 +145,9 @@ module.exports = function() {
 
   describe('top-level boolean operator', function() {
     var snapshots = [
-      {type: 'json0', v: 1, data: {x: 1, y: 1}, id: "test1"},
-      {type: 'json0', v: 1, data: {x: 1, y: 2}, id: "test2"},
-      {type: 'json0', v: 1, data: {x: 2, y: 2}, id: "test3"}
+      {type: 'json0', v: 1, data: {x: 1, y: 1}, id: "test1", m: null},
+      {type: 'json0', v: 1, data: {x: 1, y: 2}, id: "test2", m: null},
+      {type: 'json0', v: 1, data: {x: 2, y: 2}, id: "test3", m: null}
     ];
 
     beforeEach(function(done) {
