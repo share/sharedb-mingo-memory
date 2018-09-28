@@ -17,6 +17,34 @@ function extendMemoryDB(MemoryDB) {
 
   ShareDBMingo.prototype = Object.create(MemoryDB.prototype);
 
+  ShareDBMingo.prototype.query = function(collection, query, fields, options, callback) {
+    var includeMetadata = options && options.metadata;
+    var db = this;
+    if (typeof callback !== 'function') throw new Error('Callback required');
+    process.nextTick(function() {
+      var collectionDocs = db.docs[collection];
+      var snapshots = [];
+      // Include metadata for the snapshots we are about to query, so the metadata
+      // can be used to filter the results
+      var includeMetadataForQuery = true;
+      for (var id in collectionDocs || {}) {
+        var snapshot = db._getSnapshotSync(collection, id, includeMetadataForQuery);
+        snapshots.push(snapshot);
+      }
+      try {
+        var result = db._querySync(snapshots, query, options);
+        // If metadata was not explicitly defined in the original options, we want
+        // to remove the metadata from the snapshots to match ShareDB's behavior
+        if (result.snapshots && !includeMetadata) {
+          result.snapshots.forEach(function(snapshot) { snapshot.m = null; });
+        }
+        callback(null, result.snapshots, result.extra);
+      } catch (err) {
+        callback(err);
+      }
+    });
+  };
+
   ShareDBMingo.prototype._querySync = function(snapshots, query, options) {
     var parsed = parseQuery(query);
     var mingoQuery = new Mingo.Query(castToSnapshotQuery(parsed.query));
@@ -85,13 +113,16 @@ function extendMemoryDB(MemoryDB) {
 
   // Build a query object that mimics how the query would be executed if it were
   // made against snapshots persisted with `sharedb-mongo`
-  // FIXME: This doesn't handle nested doc properties with dots like: {'_m.mtime': 12300}
   function castToSnapshotQuery(query) {
     var snapshotQuery = {};
+    var propertySegments;
     for (var property in query) {
+      propertySegments = property.split('.');
+
       // Mongo doc property
-      if (MONGO_DOC_PROPERTIES[property]) {
-        snapshotQuery[MONGO_DOC_PROPERTIES[property]] = query[property];
+      if (MONGO_DOC_PROPERTIES[propertySegments[0]]) {
+        propertySegments[0] = MONGO_DOC_PROPERTIES[propertySegments[0]];
+        snapshotQuery[propertySegments.join('.')] = query[property];
 
       // top-level boolean operator
       } else if (property[0] === '$' && Array.isArray(query[property])) {

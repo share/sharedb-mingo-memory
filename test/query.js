@@ -91,12 +91,7 @@ module.exports = function() {
       });
     });
 
-    // The simpler query-casting approach doesn't handle queries that filter on
-    // sub-properties of the Share metadata object. An alternative would be to
-    // rewrite this module to cast Share snapshots to Mongo docs and vice versa,
-    // the same way that sharedb-mongo does:
-    // https://github.com/share/sharedb-mingo-memory/pull/3#pullrequestreview-99017385
-    it.skip('condition on sub-property under Share metadata', function(done) {
+    it('condition on sub-property under Share metadata', function(done) {
       this.db.query('testcollection', {'_m.mtime': 1001}, null, null, function(err, results, extra) {
         if (err) throw err;
         expect(results).eql([snapshotsNoMeta[1]]);
