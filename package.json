@@ -5,18 +5,24 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "test-cover": "node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha"
+    "test-cover": "node_modules/nyc/bin/nyc.js --temp-dir=coverage -r text -r lcov node_modules/mocha/bin/_mocha"
   },
   "repository": {
     "type": "git",
     "url": "git://github.com/share/sharedb-mingo-memory.git"
   },
+  "dependencies": {
+    "mingo": "^2.2.0"
+  },
+  "peerDependencies": {
+    "sharedb": "^1.0.0-beta"
+  },
   "devDependencies": {
-    "async": "^2.0.0-rc.3",
-    "coveralls": "^2.11.8",
-    "expect.js": "^0.3.1",
-    "istanbul": "^0.4.2",
-    "mocha": "^2.3.3",
+    "async": "^1.5.2",
+    "chai": "^4.2.0",
+    "coveralls": "^3.0.7",
+    "mocha": "^6.2.2",
+    "nyc": "^14.1.1",
     "sharedb": "^1.0.0-beta"
   },
   "author": "Avital Oliver",
@@ -24,11 +30,5 @@
   "bugs": {
     "url": "https://github.com/share/sharedb-mingo-memory/issues"
   },
-  "homepage": "https://github.com/share/sharedb-mingo-memory#readme",
-  "dependencies": {
-    "mingo": "^2.2.0"
-  },
-  "peerDependencies": {
-    "sharedb": "^1.0.0-beta"
-  }
+  "homepage": "https://github.com/share/sharedb-mingo-memory#readme"
 }

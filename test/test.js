@@ -1,4 +1,4 @@
-var expect = require('expect.js');
+var expect = require('chai').expect;
 var ShareDBMingo = require('../index');
 var getQuery = require('../get-query');
 
@@ -19,8 +19,7 @@ describe('db', function() {
 
     it('unsupported', function() {
       this.db.query('testcollection', {$mapReduce: []}, null, null, function(err, results) {
-        expect(err).ok();
-        expect(err.message).match(/Unsupported/);
+        expect(err).an('error');
       });
     });
   });
