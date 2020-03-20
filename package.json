@@ -12,7 +12,7 @@
     "url": "git://github.com/share/sharedb-mingo-memory.git"
   },
   "dependencies": {
-    "mingo": "2.5.0"
+    "mingo": "^2.5.2"
   },
   "peerDependencies": {
     "sharedb": "^1.0.0-beta"
