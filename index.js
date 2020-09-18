@@ -9,6 +9,12 @@ var MONGO_DOC_PROPERTIES = {
   '_o': 'o'
 };
 
+// Query keys to strip, because Mingo doesn't already ignore them.
+var STRIPPED_QUERY_KEYS = [
+  '$comment',
+  '$hint'
+];
+
 function extendMemoryDB(MemoryDB) {
   function ShareDBMingo(options) {
     if (!(this instanceof ShareDBMingo)) return new ShareDBMingo(options);
@@ -47,6 +53,11 @@ function extendMemoryDB(MemoryDB) {
 
   ShareDBMingo.prototype._querySync = function(snapshots, query, options) {
     var parsed = parseQuery(query);
+    // Strip out $-prefixed keys like $comment and $hint that aren't already
+    // ignored by Mingo. sharedb-mongo would normally map them to cursor calls.
+    for (var i = 0; i < STRIPPED_QUERY_KEYS.length; i++) {
+      delete parsed.query[STRIPPED_QUERY_KEYS[i]];
+    }
     var mingoQuery = new Mingo.Query(castToSnapshotQuery(parsed.query));
 
     var filtered = snapshots.filter(function(snapshot) {
