@@ -59,11 +59,11 @@ module.exports = function() {
   it('$comment and $hint should be ignored', function(done) {
     var snapshots = [
       {type: 'json0', v: 1, data: {x: 1}, id: "test1", m: null},
-      {type: 'json0', v: 1, data: {x: 3}, id: "test2", m: null}, // intentionally added out of sort order
+      {type: 'json0', v: 1, data: {x: 3}, id: "test2", m: null},
       {type: 'json0', v: 1, data: {x: 2}, id: "test3", m: null}
     ];
-    // Certain $-prefixed properties should be handled, $comment and $hint are ignored.
-    var query = {$sort: {x: 1}, $skip: 1, $limit: 1, $comment: 'Hello', $hint: 'x_1'};
+    // $comment and $hint should be ignored.
+    var query = {x: 2, $comment: 'Hello', $hint: 'x_1'};
 
     var db = this.db;
     async.each(snapshots, function(snapshot, cb) {
@@ -72,9 +72,14 @@ module.exports = function() {
       if (err) return done(err);
 
       db.query('testcollection', query, null, null, function(err, results, extra) {
-        if (err) throw err;
+        if (err) return done(err);
         expect(results).eql([snapshots[2]]);
-        done();
+        // queryPollDoc should match, otherwise subscriptions won't update properly.
+        db.queryPollDoc('testcollection', snapshots[2].id, query, null, function(err, result) {
+          if (err) return done(err);
+          expect(result).eql(true);
+          done();
+        });
       });
     });
   });
