@@ -56,6 +56,29 @@ module.exports = function() {
     });
   });
 
+  it('$comment and $hint should be ignored', function(done) {
+    var snapshots = [
+      {type: 'json0', v: 1, data: {x: 1}, id: "test1", m: null},
+      {type: 'json0', v: 1, data: {x: 3}, id: "test2", m: null}, // intentionally added out of sort order
+      {type: 'json0', v: 1, data: {x: 2}, id: "test3", m: null}
+    ];
+    // Certain $-prefixed properties should be handled, $comment and $hint are ignored.
+    var query = {$sort: {x: 1}, $skip: 1, $limit: 1, $comment: 'Hello', $hint: 'x_1'};
+
+    var db = this.db;
+    async.each(snapshots, function(snapshot, cb) {
+      db.commit('testcollection', snapshot.id, {v: 0, create: {}}, snapshot, null, cb);
+    }, function(err) {
+      if (err) return done(err);
+
+      db.query('testcollection', query, null, null, function(err, results, extra) {
+        if (err) throw err;
+        expect(results).eql([snapshots[2]]);
+        done();
+      });
+    });
+  });
+
   describe('filtering on special Share properties', function() {
     // When sharedb-mongo persists a snapshot into Mongo, any properties
     // underneath `data` get "promoted" to top-level, and Share properties
