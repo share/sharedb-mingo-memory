@@ -12,6 +12,7 @@
     "url": "git://github.com/share/sharedb-mingo-memory.git"
   },
   "dependencies": {
+    "lodash.clonedeep": "^4.5.0",
     "mingo": "2.5.0"
   },
   "peerDependencies": {
@@ -24,7 +25,8 @@
     "mocha": "^6.2.2",
     "nyc": "^14.1.1",
     "ot-json1": "^1.0.1",
-    "sharedb": "^1.0.0-beta"
+    "sharedb": "^1.0.0",
+    "sinon": "^11.1.2"
   },
   "author": "Avital Oliver",
   "license": "MIT",
