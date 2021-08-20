@@ -69,13 +69,20 @@ function extendMemoryDB(MemoryDB) {
   };
 
   ShareDBMingo.prototype.queryPollDoc = function(collection, id, query, options, callback) {
-    var mingoQuery = new Mingo.Query(castToSnapshotQuery(query));
-    this.getSnapshot(collection, id, null, null, function(err, snapshot) {
-      if (err) return callback(err);
-      if (snapshot.data) {
-        callback(null, mingoQuery.test(snapshot));
-      } else {
-        callback(null, false);
+    var includeMetadata = options && options.metadata;
+    var db = this;
+    if (typeof callback !== 'function') throw new Error('Callback required');
+    process.nextTick(function() {
+      try {
+        var mingoQuery = new Mingo.Query(castToSnapshotQuery(query));
+        var snapshot = db._getSnapshotSync(collection, id, includeMetadata);
+        if (snapshot.data) {
+          callback(null, mingoQuery.test(snapshot));
+        } else {
+          callback(null, false);
+        }
+      } catch (err) {
+        callback(err);
       }
     });
   };
