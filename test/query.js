@@ -57,9 +57,6 @@ module.exports = function() {
     });
   });
 
-  // Note: Thsi is not working even with the fix for the simple query test above
-  // It appears to be an issue with Mingo itself.
-  // See: https://github.com/kofrasa/mingo/issues/190
   it('supports regex in a $all query', function(done) {
     var snapshots = [
       {type: 'json0', id: 'test1', v: 1, data: {x: 1, y: 1, foo: ['1foo', 'bar']}},
