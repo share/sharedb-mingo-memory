@@ -34,6 +34,53 @@ module.exports = function() {
     });
   });
 
+  it('supports regex in a simple query', function(done) {
+    var snapshots = [
+      {type: 'json0', id: 'test1', v: 1, data: {x: 1, y: 1, foo: '1foo'}},
+      {type: 'json0', id: 'test2', v: 1, data: {x: 2, y: 2, foo: 'foo1'}},
+      {type: 'json0', id: 'test3', v: 1, data: {x: 3, y: 2, foo: 'foo2'}}
+    ];
+    var query = {$count: true, foo: /^foo/};
+
+    var db = this.db;
+    async.each(snapshots, function(snapshot, cb) {
+      db.commit('testcollection', snapshot.id, {v: 0, create: {}}, snapshot, null, cb);
+    }, function(err) {
+      if (err) return done(err);
+      db.query('testcollection', query, null, null, function(err, results, extra) {
+        if (err) return done(err);
+
+        expect(results).eql([]);
+        expect(extra).eql(2);
+        done();
+      });
+    });
+  });
+
+  it('supports regex in a $all query', function(done) {
+    var snapshots = [
+      {type: 'json0', id: 'test1', v: 1, data: {x: 1, y: 1, foo: ['1foo', 'bar']}},
+      {type: 'json0', id: 'test1', v: 1, data: {x: 1, y: 1, foo: ['foo', 'barz']}},
+      {type: 'json0', id: 'test2', v: 1, data: {x: 2, y: 2, foo: ['foo1', 'bar']}},
+      {type: 'json0', id: 'test3', v: 1, data: {x: 3, y: 2, foo: ['foo2', 'bar']}},
+    ];
+    var query = {$count: true, foo: {'$all': [/^foo/, 'bar']}};
+
+    var db = this.db;
+    async.each(snapshots, function(snapshot, cb) {
+      db.commit('testcollection', snapshot.id, {v: 0, create: {}}, snapshot, null, cb);
+    }, function(err) {
+      if (err) return done(err);
+      db.query('testcollection', query, null, null, function(err, results, extra) {
+        if (err) return done(err);
+
+        expect(results).eql([]);
+        expect(extra).eql(2);
+        done();
+      });
+    });
+  });
+
   it('$sort, $skip and $limit should order, skip and limit', function(done) {
     var snapshots = [
       {type: 'json0', v: 1, data: {x: 1}, id: "test1", m: null},
