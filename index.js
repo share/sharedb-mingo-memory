@@ -1,5 +1,4 @@
 var Mingo = require('mingo');
-var cloneDeep = require('lodash.clonedeep')
 
 // Snapshot properties added to the root doc by `castToDoc()` in sharedb-mongo
 var MONGO_DOC_PROPERTIES = {
@@ -99,7 +98,7 @@ function extendMemoryDB(MemoryDB) {
   };
 
   function parseQuery(inputQuery) {
-    var query = cloneDeep(inputQuery);
+    var query = JSON.parse(JSON.stringify(inputQuery));
 
     if (inputQuery.$orderby)
       console.warn("Warning: query.$orderby deprecated. Use query.$sort instead.");

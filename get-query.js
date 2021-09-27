@@ -1,5 +1,3 @@
-var cloneDeep = require('lodash.clonedeep');
-
 // Given a key/value comparison query, return a query object with that
 // filter and a specified sort order. The 'order' argument looks like
 // [['foo', 1], ['bar', -1]] for sort by foo asending, then bar
@@ -19,7 +17,7 @@ function makeQuery(options) {
         }
         mongoSort[sort[i][0]] = sort[i][1];
       }
-      var query = cloneDeep(inputQuery);
+      var query = JSON.parse(JSON.stringify(inputQuery));
       query.$sort = mongoSort;
       return query;
     }
