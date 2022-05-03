@@ -16,7 +16,7 @@
     "mingo": "^4.1.5"
   },
   "peerDependencies": {
-    "sharedb": "^1.0.0-beta || ^2.0.0"
+    "sharedb": "^1.0.0-beta || ^2.0.0 || ^3.0.0"
   },
   "devDependencies": {
     "async": "^3.2.3",
