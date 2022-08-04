@@ -131,6 +131,39 @@ module.exports = function() {
     });
   });
 
+  describe('$aggregate', function() {
+    it('supports basic $match $group $sort', function(done) {
+      var snapshots = [
+        {type: 'json0', id: 'test1', v: 1, data: {day: 1, name: 'a', amount: 1}},
+        {type: 'json0', id: 'test2', v: 1, data: {day: 1, name: 'b', amount: 3}},
+        {type: 'json0', id: 'test3', v: 1, data: {day: 2, name: 'a', amount: 5}},
+        {type: 'json0', id: 'test4', v: 1, data: {day: 2, name: 'b', amount: 7}},
+        {type: 'json0', id: 'test5', v: 1, data: {day: 2, name: 'a', amount: 13}}
+      ];
+      var query = {
+        $aggregate: [
+          {$match: {day: 2}},
+          {$group: {_id: '$name', total: {$sum: '$amount'}}},
+          {$sort: {_id: 1}}
+        ]
+      };
+
+      var db = this.db;
+      async.each(snapshots, function(snapshot, cb) {
+        db.commit('testcollection', snapshot.id, {v: 0, create: {}}, snapshot, null, cb);
+      }, function(err) {
+        if (err) return done(err);
+        db.query('testcollection', query, null, null, function(err, results, extra) {
+          if (err) return done(err);
+
+          expect(results).eql([]);
+          expect(extra).eql([{_id: 'a', total: 18}, {_id: 'b', total: 7}]);
+          done();
+        });
+      });
+    });
+  });
+
   describe('filtering on special Share properties', function() {
     // When sharedb-mongo persists a snapshot into Mongo, any properties
     // underneath `data` get "promoted" to top-level, and Share properties
