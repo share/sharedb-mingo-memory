@@ -1,5 +1,8 @@
 var Mingo = require('mingo');
-var cloneDeep = require('lodash.clonedeep')
+var cloneDeep = require('lodash.clonedeep');
+
+// This is designed for use in tests, so load all Mingo query operators
+require('mingo/init/system');
 
 // Snapshot properties added to the root doc by `castToDoc()` in sharedb-mongo
 var MONGO_DOC_PROPERTIES = {
@@ -53,6 +56,15 @@ function extendMemoryDB(MemoryDB) {
   };
 
   ShareDBMingo.prototype._querySync = function(snapshots, query, options) {
+    if (Array.isArray(query.$aggregate)) {
+      // sharedb-mongo passes the $aggregate pipeline straight to Mongo, so
+      // convert Snapshot instances to Mongo doc format for Mingo to operate on.
+      var mongoDocs = snapshots.map(castToMongoDoc);
+      var mingoAgg = new Mingo.Aggregator(query.$aggregate);
+      var aggResult = mingoAgg.run(mongoDocs);
+      return { snapshots: [], extra: aggResult };
+    }
+
     var parsed = parseQuery(query);
     var mingoQuery = new Mingo.Query(castToSnapshotQuery(parsed.query));
 
@@ -175,6 +187,16 @@ function extendMemoryDB(MemoryDB) {
       }
       return 0;
     });
+  }
+
+  /** Casts the Snapshot into a Mongo document object */
+  function castToMongoDoc(snapshot) {
+    var doc = Object.assign({}, snapshot.data);
+    doc._id = snapshot.id;
+    doc._type = snapshot.type;
+    doc._v = snapshot.v;
+    doc._m = snapshot.m;
+    return doc;
   }
 
   return ShareDBMingo;
