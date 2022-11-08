@@ -3,7 +3,7 @@ var ShareDBMingo = require('../index');
 var getQuery = require('../get-query');
 
 function create(callback) {
-  var db = ShareDBMingo();
+  var db = new ShareDBMingo();
   callback(null, db);
 }
 
@@ -18,7 +18,7 @@ describe('db', function() {
     require('./query')();
 
     it('unsupported', function() {
-      this.db.query('testcollection', {$mapReduce: []}, null, null, function(err, results) {
+      this.db.query('testcollection', {$mapReduce: []}, null, null, function(err) {
         expect(err).an('error');
       });
     });
@@ -33,5 +33,5 @@ describe('getQuery', function() {
       .eql({foo: 2, $sort: {foo: -1}});
     expect(getQuery({query: {foo: 2}, sort: [['foo', 1], ['bar', -1]]}))
       .eql({foo: 2, $sort: {foo: 1, bar: -1}});
-  })
+  });
 });

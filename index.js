@@ -6,17 +6,17 @@ require('mingo/init/system');
 
 // Snapshot properties added to the root doc by `castToDoc()` in sharedb-mongo
 var MONGO_DOC_PROPERTIES = {
-  '_id': 'id',
-  '_v': 'v',
-  '_type': 'type',
-  '_m': 'm',
-  '_o': 'o'
+  _id: 'id',
+  _v: 'v',
+  _type: 'type',
+  _m: 'm',
+  _o: 'o'
 };
 
 // Query keys to strip, because Mingo doesn't already ignore them.
 var STRIPPED_QUERY_KEYS = {
-  '$comment': true,
-  '$hint': true
+  $comment: true,
+  $hint: true
 };
 
 function extendMemoryDB(MemoryDB) {
@@ -46,7 +46,9 @@ function extendMemoryDB(MemoryDB) {
         // If metadata was not explicitly defined in the original options, we want
         // to remove the metadata from the snapshots to match ShareDB's behavior
         if (result.snapshots && !includeMetadata) {
-          result.snapshots.forEach(function(snapshot) { snapshot.m = null; });
+          result.snapshots.forEach(function(snapshot) {
+            snapshot.m = null;
+          });
         }
         callback(null, result.snapshots, result.extra);
       } catch (err) {
@@ -55,14 +57,14 @@ function extendMemoryDB(MemoryDB) {
     });
   };
 
-  ShareDBMingo.prototype._querySync = function(snapshots, query, options) {
+  ShareDBMingo.prototype._querySync = function(snapshots, query, _options) {
     if (Array.isArray(query.$aggregate)) {
       // sharedb-mongo passes the $aggregate pipeline straight to Mongo, so
       // convert Snapshot instances to Mongo doc format for Mingo to operate on.
       var mongoDocs = snapshots.map(castToMongoDoc);
       var mingoAgg = new Mingo.Aggregator(query.$aggregate);
       var aggResult = mingoAgg.run(mongoDocs);
-      return { snapshots: [], extra: aggResult };
+      return {snapshots: [], extra: aggResult};
     }
 
     var parsed = parseQuery(query);
@@ -113,8 +115,9 @@ function extendMemoryDB(MemoryDB) {
   function parseQuery(inputQuery) {
     var query = cloneDeep(inputQuery);
 
-    if (inputQuery.$orderby)
-      console.warn("Warning: query.$orderby deprecated. Use query.$sort instead.");
+    if (inputQuery.$orderby) {
+      console.warn('Warning: query.$orderby deprecated. Use query.$sort instead.');
+    }
     var sort = query.$sort || query.$orderby;
     delete query.$sort;
     delete query.$orderby;
@@ -165,7 +168,7 @@ function extendMemoryDB(MemoryDB) {
 
       // nested `data` document
       } else {
-        snapshotQuery["data." + property] = query[property];
+        snapshotQuery['data.' + property] = query[property];
       }
     }
     return snapshotQuery;

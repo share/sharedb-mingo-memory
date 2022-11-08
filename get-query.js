@@ -10,12 +10,12 @@ function makeQuery(options) {
 
   if (sort) {
     // Convert sort order to Mongo's expected structure
-    if (!Array.isArray(sort)) throw new Error("invalid sort order");
+    if (!Array.isArray(sort)) throw new Error('invalid sort order');
     if (sort.length > 0) {
       var mongoSort = {};
       for (var i = 0; i < sort.length; i++) {
         if (!Array.isArray(sort[i]) || sort[i].length !== 2) {
-          throw new Error("invalid sort order");
+          throw new Error('invalid sort order');
         }
         mongoSort[sort[i][0]] = sort[i][1];
       }
