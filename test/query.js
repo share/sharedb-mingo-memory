@@ -246,6 +246,21 @@ module.exports = function() {
     });
   });
 
+  it('throws when the query is not an valid query', function(done) {
+    var db = this.db;
+    var query = {
+      $and: [
+        123,
+        {y: 1}
+      ]
+    };
+
+    db.query('testcollection', query, null, null, function(err) {
+      expect(err.message).to.be.equal('Invalid mongo query format');
+      done();
+    });
+  });
+
   describe('top-level boolean operator', function() {
     var snapshots = [
       {type: 'json0', v: 1, data: {x: 1, y: 1}, id: 'test1', m: null},

@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "lodash.clonedeep": "^4.5.0",
+    "lodash.isobject": "^3.0.2",
     "mingo": "^6.1.0"
   },
   "peerDependencies": {
