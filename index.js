@@ -1,5 +1,6 @@
 var Mingo = require('mingo');
 var cloneDeep = require('lodash.clonedeep');
+var isObject = require('lodash.isobject');
 
 // This is designed for use in tests, so load all Mingo query operators
 require('mingo/init/system');
@@ -143,6 +144,10 @@ function extendMemoryDB(MemoryDB) {
   // Build a query object that mimics how the query would be executed if it were
   // made against snapshots persisted with `sharedb-mongo`
   function castToSnapshotQuery(query) {
+    if (!isObject(query) || Array.isArray(query)) {
+      throw new Error('Invalid mongo query format');
+    }
+
     var snapshotQuery = {};
     var propertySegments;
     for (var property in query) {
