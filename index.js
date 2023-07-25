@@ -1,6 +1,7 @@
 var Mingo = require('mingo');
 var cloneDeep = require('lodash.clonedeep');
 var isObject = require('lodash.isobject');
+var sharedbMongoUtils = require('./sharedb-mongo-utils');
 
 // This is designed for use in tests, so load all Mingo query operators
 require('mingo/init/system');
@@ -27,6 +28,16 @@ function extendMemoryDB(MemoryDB) {
   }
 
   ShareDBMingo.prototype = Object.create(MemoryDB.prototype);
+
+  ShareDBMingo.prototype._writeSnapshotSync = function(collection, id, snapshot) {
+    var collectionDocs = this.docs[collection] || (this.docs[collection] = {});
+    // The base MemoryDB deletes the `collectionDocs` entry when `snapshot.type == null`. However,
+    // sharedb-mongo leaves behind stub Mongo docs that preserve `snapshot.m` metadata. To match
+    // that behavior, just set the new snapshot instead of deleting the entry.
+    //
+    // For queries, the "tombstones" left over from deleted docs get filtered out by makeQuerySafe.
+    collectionDocs[id] = cloneDeep(snapshot);
+  };
 
   ShareDBMingo.prototype.query = function(collection, query, fields, options, callback) {
     var includeMetadata = options && options.metadata;
@@ -131,6 +142,10 @@ function extendMemoryDB(MemoryDB) {
 
     var count = query.$count;
     delete query.$count;
+
+    // If needed, modify query to exclude "tombstones" left after deleting docs, using the same
+    // approach that sharedb-mongo uses.
+    sharedbMongoUtils.makeQuerySafe(query);
 
     return {
       query: query,
