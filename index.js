@@ -2,6 +2,7 @@ var Mingo = require('mingo');
 var cloneDeep = require('lodash.clonedeep');
 var isObject = require('lodash.isobject');
 var sharedbMongoUtils = require('./sharedb-mongo-utils');
+var util = require('sharedb/lib/util');
 
 // This is designed for use in tests, so load all Mingo query operators
 require('mingo/init/system');
@@ -43,7 +44,7 @@ function extendMemoryDB(MemoryDB) {
     var includeMetadata = options && options.metadata;
     var db = this;
     if (typeof callback !== 'function') throw new Error('Callback required');
-    process.nextTick(function() {
+    util.nextTick(function() {
       var collectionDocs = db.docs[collection];
       var snapshots = [];
       // Include metadata for the snapshots we are about to query, so the metadata
@@ -99,7 +100,7 @@ function extendMemoryDB(MemoryDB) {
     var includeMetadata = options && options.metadata;
     var db = this;
     if (typeof callback !== 'function') throw new Error('Callback required');
-    process.nextTick(function() {
+    util.nextTick(function() {
       try {
         var mingoQuery = new Mingo.Query(castToSnapshotQuery(query));
         var snapshot = db._getSnapshotSync(collection, id, includeMetadata);
