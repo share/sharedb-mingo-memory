@@ -71,11 +71,24 @@ function extendMemoryDB(MemoryDB) {
   };
 
   ShareDBMingo.prototype._querySync = function(snapshots, query, _options) {
+    var db = this;
     if (Array.isArray(query.$aggregate)) {
       // sharedb-mongo passes the $aggregate pipeline straight to Mongo, so
       // convert Snapshot instances to Mongo doc format for Mingo to operate on.
       var mongoDocs = snapshots.map(castToMongoDoc);
-      var mingoAgg = new Mingo.Aggregator(query.$aggregate);
+      var aggregatorOptions = {
+        // support $lookup
+        collectionResolver: function(collection) {
+          var collectionDocs = db.docs[collection];
+          var collectionSnapshots = [];
+          for (var id in collectionDocs || {}) {
+            var snapshot = db._getSnapshotSync(collection, id, true);
+            collectionSnapshots.push(snapshot);
+          }
+          return collectionSnapshots.map(castToMongoDoc);
+        }
+      };
+      var mingoAgg = new Mingo.Aggregator(query.$aggregate, aggregatorOptions);
       var aggResult = mingoAgg.run(mongoDocs);
       return {snapshots: [], extra: aggResult};
     }
@@ -121,7 +134,8 @@ function extendMemoryDB(MemoryDB) {
         query.hasOwnProperty('$sort') ||
         query.hasOwnProperty('$limit') ||
         query.hasOwnProperty('$skip') ||
-        query.hasOwnProperty('$count')
+        query.hasOwnProperty('$count') ||
+        query.hasOwnProperty('$aggregate')
     );
   };
 

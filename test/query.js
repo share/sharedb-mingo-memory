@@ -162,6 +162,62 @@ module.exports = function() {
         });
       });
     });
+
+    it('supports $lookup', function(done) {
+      var users = [
+        {type: 'json0', id: 'user1', v: 1, data: {name: 'Alice', age: 30}},
+        {type: 'json0', id: 'user2', v: 1, data: {name: 'Bob', age: 25}}
+      ];
+      var orders = [
+        {type: 'json0', id: 'order1', v: 1, data: {userId: 'user1', item: 'Book'}},
+        {type: 'json0', id: 'order2', v: 1, data: {userId: 'user2', item: 'Pen'}},
+        {type: 'json0', id: 'order3', v: 1, data: {userId: 'user1', item: 'Notebook'}}
+      ];
+      var query = {
+        $aggregate: [
+          {$lookup: {
+            from: 'users',
+            localField: 'userId',
+            foreignField: '_id',
+            as: 'userDetails'
+          }},
+          {$unwind: '$userDetails'},
+          {$project: {
+            _id: 1,
+            item: 1,
+            userName: '$userDetails.name',
+            userAge: '$userDetails.age'
+          }},
+          {$sort: {userName: 1, item: 1}}
+        ]
+      };
+
+      var db = this.db;
+      async.series([
+        function(cb) {
+          async.each(users, function(user, innerCb) {
+            db.commit('users', user.id, {v: 0, create: {}}, user, null, innerCb);
+          }, cb);
+        },
+        function(cb) {
+          async.each(orders, function(order, innerCb) {
+            db.commit('orders', order.id, {v: 0, create: {}}, order, null, innerCb);
+          }, cb);
+        },
+        function(cb) {
+          db.query('orders', query, null, null, function(err, results, extra) {
+            if (err) return cb(err);
+            expect(results).eql([]);
+            expect(extra).eql([
+              {_id: 'order1', item: 'Book', userName: 'Alice', userAge: 30},
+              {_id: 'order3', item: 'Notebook', userName: 'Alice', userAge: 30},
+              {_id: 'order2', item: 'Pen', userName: 'Bob', userAge: 25}
+            ]);
+            cb();
+          });
+        }
+      ], done);
+    });
   });
 
   describe('filtering on special Share properties', function() {
