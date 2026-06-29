@@ -30,7 +30,9 @@ describe('db', function() {
   });
 
   it('preserves doc metadata after deletion', function(done) {
-    var clock = sinon.useFakeTimers(1000000);
+    // Only fake Date — newer Sinon also fakes process.nextTick by default,
+    // which stalls ShareDB's async callbacks and times the test out.
+    var clock = sinon.useFakeTimers({now: 1000000, toFake: ['Date']});
     function expectMeta(property, value) {
       var snapshot = db._getSnapshotSync('testcollection', 'test1', true);
       expect(snapshot).to.have.property('m');
