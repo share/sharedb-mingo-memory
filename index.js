@@ -4,8 +4,14 @@ var isObject = require('lodash.isobject');
 var sharedbMongoUtils = require('./sharedb-mongo-utils');
 var util = require('sharedb/lib/util');
 
-// This is designed for use in tests, so load all Mingo query operators
-require('mingo/init/system');
+// This is designed for use in tests, so load all Mingo query operators. Mingo 7
+// removed this subpath and auto-loads every operator from the default module, so
+// the explicit require is only needed for Mingo 6.
+try {
+  require('mingo/init/system');
+} catch (error) {
+  if (error.code !== 'ERR_PACKAGE_PATH_NOT_EXPORTED') throw error;
+}
 
 // Snapshot properties added to the root doc by `castToDoc()` in sharedb-mongo
 var MONGO_DOC_PROPERTIES = {
