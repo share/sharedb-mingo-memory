@@ -7,7 +7,7 @@
     "lint": "./node_modules/.bin/eslint .",
     "lint:fix": "npm run lint -- --fix",
     "test": "mocha",
-    "test-cover": "node_modules/nyc/bin/nyc.js --temp-dir=coverage -r text -r lcov node_modules/mocha/bin/_mocha"
+    "test-cover": "nyc --temp-dir=coverage -r text -r lcov mocha"
   },
   "repository": {
     "type": "git",
